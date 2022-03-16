@@ -30,6 +30,8 @@ class TTTBoard {
 ${grid[0].toCellString()} | ${grid[1].toCellString()} | ${grid[2].toCellString()}
 ${grid[3].toCellString()} | ${grid[4].toCellString()} | ${grid[5].toCellString()}
 ${grid[6].toCellString()} | ${grid[7].toCellString()} | ${grid[8].toCellString()}
+
+Winner: $winner
     """;
   }
 

@@ -3,13 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/game/game.dart';
 import '../models/ttt_board.dart';
+import '../widgets/cell.dart';
 
-// TODO: Add a BlocListener to display a win/lose/tie dialog.
-// TODO: Add a refresh button to the app bar.
-
-// TODO: Show Russell published TTT Flutter code.
-
-// TODO: Break out cells and boards into widgets.
+// TODO: Break out boards into widgets.
 
 class HomePage extends StatelessWidget {
   static const cellSpacing = 8.0;
@@ -20,7 +16,15 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Tic-Tac-Toe")),
-      body: Center(
+      body: BlocListener<GameBloc, GameState>(
+        listener: (context, state) {
+          if (state.board.winner != CellType.empty) {
+            _showEndDialog(context, state.board.winner);
+          }
+          else if (state.board.isFull) {
+            _showEndDialog(context);
+          }
+        },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -49,18 +53,9 @@ class HomePage extends StatelessWidget {
                     mainAxisSpacing: cellSpacing,
                     crossAxisCount: 3,
                     children: [
-                      for (int i = 0; i < 9; i++) GestureDetector(
-                        onTap: () => context.read<GameBloc>().move(i),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          color: Colors.black,
-                          child: FittedBox(
-                            child: Text(
-                              state.board[i].toCellString(),
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        ),
+                      for (int i = 0; i < 9; i++) Cell(
+                        type: state.board[i],
+                        moveCallback: () => context.read<GameBloc>().move(i),
                       ),
                     ],
                   );
@@ -70,6 +65,34 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showEndDialog(BuildContext context, [CellType winner = CellType.empty]) {
+    final msg = winner != CellType.empty ? "Player ${winner.name} wins!" : "It's a tie!";
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return SimpleDialog(
+          title: Center(child: Text(msg)),
+          children: [
+            Center(
+              child: SimpleDialogOption(
+                child: IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'New Game',
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.read<GameBloc>().restart();
+                  },
+                ),
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 }

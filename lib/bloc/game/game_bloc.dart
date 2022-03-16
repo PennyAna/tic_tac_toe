@@ -6,9 +6,13 @@ import 'game_state.dart';
 class GameBloc extends Cubit<GameState> {
   GameBloc() : super(GameState(board: TTTBoard()));
 
+  void restart() {
+    emit(GameState(board: TTTBoard()));
+  }
+
   void move(int index) {
     TTTBoard updatedBoard = state.board.move(index, state.currentPlayer);
-    final winner = _checkForWin();
+    final winner = _checkForWin(updatedBoard);
 
     if (winner != state.board.winner) {
       updatedBoard = updatedBoard.copyWith(winner: winner);
@@ -20,11 +24,9 @@ class GameBloc extends Cubit<GameState> {
     ));
   }
 
-  CellType _checkForWin() {
+  CellType _checkForWin(TTTBoard board) {
     // no win is possible before the 5th move
-    if (state.board.moveCount >= 5) {
-      final board = state.board;
-
+    if (board.moveCount >= 5) {
       for (final pattern in winPatterns) {
         if (board[pattern.cell1] != CellType.empty &&
             board[pattern.cell1] == board[pattern.cell2] &&
