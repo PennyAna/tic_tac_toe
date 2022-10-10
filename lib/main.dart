@@ -1,25 +1,24 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'bloc/game/game.dart';
 import 'pages/home.dart';
 
 void main() {
-  runApp(const App());
+  runApp(const ProviderScope(child: App()));
 }
 
 class App extends StatelessWidget {
-  const App({Key? key}) : super(key: key);
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GameBloc(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData.dark(),
-        home: const HomePage(),
-      ),
+    return MaterialApp(
+      title: 'Tic Tac Toe',
+      theme: FlexThemeData.light(scheme: FlexScheme.green),
+      darkTheme: FlexThemeData.dark(scheme: FlexScheme.green),
+      themeMode: ThemeMode.system,
+      home: const HomePage(),
     );
   }
 }

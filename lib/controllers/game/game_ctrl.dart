@@ -1,14 +1,12 @@
-import 'package:bloc/bloc.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../models/ttt_board.dart';
 import 'game_state.dart';
 
-class GameBloc extends Cubit<GameState> {
-  GameBloc() : super(GameState(board: TTTBoard()));
+final gameCtrlProvider = StateNotifierProvider.autoDispose<GameCtrl, GameState>((ref) => GameCtrl());
 
-  void restart() {
-    emit(GameState(board: TTTBoard()));
-  }
+class GameCtrl extends StateNotifier<GameState> {
+  GameCtrl() : super(GameState(board: TTTBoard()));
 
   void move(int index) {
     TTTBoard updatedBoard = state.board.move(index, state.currentPlayer);
@@ -18,10 +16,10 @@ class GameBloc extends Cubit<GameState> {
       updatedBoard = updatedBoard.copyWith(winner: winner);
     }
 
-    emit(state.copyWith(
+    state = state.copyWith(
       board: updatedBoard,
       currentPlayer: state.currentPlayer == CellType.X ? CellType.O : CellType.X,
-    ));
+    );
   }
 
   CellType _checkForWin(TTTBoard board) {

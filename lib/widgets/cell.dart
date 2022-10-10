@@ -6,7 +6,7 @@ class Cell extends StatelessWidget {
   final CellType type;
   final VoidCallback moveCallback;
 
-  const Cell({Key? key, required this.type, required this.moveCallback}) : super(key: key);
+  const Cell({super.key, required this.type, required this.moveCallback});
 
   @override
   Widget build(BuildContext context) {

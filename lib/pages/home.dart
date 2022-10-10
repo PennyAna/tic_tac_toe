@@ -1,61 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../bloc/game/game.dart';
+import '../controllers/game/game.dart';
 import '../models/ttt_board.dart';
 import '../widgets/board.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage extends ConsumerWidget {
+  const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<GameState>(gameCtrlProvider, (previous, current) {
+      if (current.board.winner != CellType.empty) {
+        _showEndDialog(context: context, ref: ref, winner: current.board.winner);
+      }
+      else if (current.board.isFull) {
+        _showEndDialog(context: context, ref: ref);
+      }
+    });
+
+    final state = ref.watch(gameCtrlProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text("Tic-Tac-Toe")),
-      body: BlocListener<GameBloc, GameState>(
-        listener: (context, state) {
-          if (state.board.winner != CellType.empty) {
-            _showEndDialog(context, state.board.winner);
-          }
-          else if (state.board.isFull) {
-            _showEndDialog(context);
-          }
-        },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Center(
-                child: BlocBuilder<GameBloc, GameState>(
-                  buildWhen: (previous, current) => previous.currentPlayer != current.currentPlayer,
-                  builder: (context, state) {
-                    return Text(
-                      "Player: ${state.currentPlayer.name}",
-                      style: Theme.of(context).textTheme.headline5,
-                    );
-                  },
-                ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Center(
+              child: Text(
+                "Player: ${state.currentPlayer.name}",
+                style: Theme.of(context).textTheme.headline5,
               ),
             ),
-            Expanded(
-              flex: 8,
-              child: BlocBuilder<GameBloc, GameState>(
-                buildWhen: (previous, current) => previous.board != current.board,
-                builder: (context, state) {
-                  return Board(
-                    board: state.board,
-                    moveCallback: context.read<GameBloc>().move,
-                  );
-                },
-              ),
+          ),
+          Expanded(
+            flex: 8,
+            child: Board(
+              board: state.board,
+              moveCallback: ref.read(gameCtrlProvider.notifier).move,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  void _showEndDialog(BuildContext context, [CellType winner = CellType.empty]) {
+  void _showEndDialog({
+    required BuildContext context,
+    required WidgetRef ref,
+    CellType winner = CellType.empty,
+  }) {
     final msg = winner != CellType.empty ? "Player ${winner.name} wins!" : "It's a tie!";
 
     showDialog(
@@ -72,7 +67,7 @@ class HomePage extends StatelessWidget {
                   tooltip: 'New Game',
                   onPressed: () {
                     Navigator.pop(context);
-                    context.read<GameBloc>().restart();
+                    ref.invalidate(gameCtrlProvider);
                   },
                 ),
               ),

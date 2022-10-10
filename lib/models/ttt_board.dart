@@ -50,10 +50,8 @@ Winner: $winner
 enum CellType {
   empty,
   X,
-  O,
-}
+  O;
 
-extension CellTypeX on CellType {
   String toCellString() => this == CellType.empty ? ' ' : name;
 }
 
